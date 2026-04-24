@@ -23,20 +23,42 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Detect solution and tests
+        id: detect
+        run: |
+          SOLUTION="$(find . -maxdepth 6 -name '*.sln' | head -n 1)"
+          if [ -z "$SOLUTION" ]; then
+            echo "No .sln file found in repository."
+            exit 1
+          fi
+          echo "solution=$SOLUTION" >> "$GITHUB_OUTPUT"
+
+          TEST_COUNT="$(find . -maxdepth 8 -name '*Test*.csproj' | wc -l)"
+          if [ "$TEST_COUNT" -gt 0 ]; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore "${{ steps.detect.outputs.solution }}"
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build "${{ steps.detect.outputs.solution }}" --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        if: steps.detect.outputs.has_tests == 'true'
+        run: dotnet test "${{ steps.detect.outputs.solution }}" --configuration Release --no-build --verbosity normal
+
+      - name: Skip tests (none found)
+        if: steps.detect.outputs.has_tests != 'true'
+        run: echo "No test projects found. Skipping test step."
 
       - name: Publish
-        run: dotnet publish --configuration Release --output ./publish
+        run: dotnet publish "${{ steps.detect.outputs.solution }}" --configuration Release --output ./publish
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: app-publish
           path: ./publish
