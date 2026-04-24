@@ -52,7 +52,6 @@ public class LoginFormController {
             }else {
                 new Alert(Alert.AlertType.ERROR, "INVALID PASSWORD", ButtonType.OK).show();
             }
-            System.out.println(user);
         }else{
             new Alert(Alert.AlertType.ERROR, "USER NOT FOUND", ButtonType.OK).show();
         }
