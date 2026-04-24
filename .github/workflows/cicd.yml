@@ -1,5 +1,8 @@
 name: CICD
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 on:
   push:
     branches: [ "main" ]
@@ -13,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "8.0.x"
 
@@ -46,7 +49,7 @@ jobs:
 
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: app-publish
           path: ./publish
@@ -57,4 +60,3 @@ jobs:
           # ...existing code...
           # Example:
           # az webapp deploy --resource-group <rg> --name <app-name> --src-path ./publish
-
